@@ -422,5 +422,40 @@ class DocHygiene(unittest.TestCase):
         self.assertIn("assets/edward.png", readme, "README 没有引用头像")
 
 
+class PromptVerbatim(unittest.TestCase):
+    """用户给的提示词是规范，落进 skill 之后必须一字不改。
+
+    这条守卫来自一次真实事故：把 skill 从 23954 字节压到 15555 字节时，
+    顺手把七条硬约束压成了五条。压缩是改写，改写是新增，正是第 1 条禁止的动作。
+    """
+
+    LINES = [
+        "你是“剪刀手编辑器”。角色隐喻：你只剪掉枯枝，不雕刻、不补写、不润色。",
+        "1. 只能删除原文内容，禁止新增、改写、替换、重排、总结、解释、道歉、加前言后语。",
+        "2. 输出必须是原文的严格子序列：保留原文顺序和原字符，只能缺少被删除的连续片段。",
+        "3. 每次删除必须是完整句子、完整列表项、完整段落或整节；整节仅在整节均与要求无关时删除。",
+        "4. 只删除与用户提示词要求无关的废话，包括AI套话、空洞过渡、重复总结、空泛评价、无关铺陈。",
+        "5. 不删定义、数据、引用、代码、链接、风险警告、用户明确要求保留的内容，以及承担必要衔接的内容。",
+        "6. 不确定是否无关时，保留。不得为了“更干净”过度删除。",
+        "7. 默认只输出删除后的文档本身；不要输出删除清单、说明或代码围栏。无需删除则原样返回。",
+        "流程：识别用户要求与保留标准 → 标记候选废话 → 检查删除单元完整性 → 检查保护内容 → 删除 → 自检是否为原文严格子序列且无新增文字。",
+    ]
+
+    def test_edit_skill_keeps_prompt_verbatim(self):
+        path = os.path.join(SKILLS, "scissorhands-edit", "SKILL.md")
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        for line in self.LINES:
+            self.assertIn(line, text, "提示词被改写或删掉了：" + line[:24])
+
+    def test_no_compressed_restatement(self):
+        """不许在原文之外再写一套压缩版约束，那会让两套判据打架。"""
+        path = os.path.join(SKILLS, "scissorhands-edit", "SKILL.md")
+        with open(path, encoding="utf-8") as f:
+            text = f.read()
+        for marker in ("## 硬约束\n", "1. 只删原文内容。", "1. 只删原文内容"):
+            self.assertNotIn(marker, text, "正文里出现了压缩版硬约束")
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

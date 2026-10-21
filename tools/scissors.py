@@ -37,16 +37,20 @@ TERMINATORS = set("。！？!?；;…\n")
 
 # 删除片段必须落在「句子边界」或「块边界」上，否则判为非完整单元。
 # 块边界 = 行首到行尾（覆盖标题、列表项、表格行、代码块内的整行）。
+#
+# severity：block = 直接阻断（不可复现的数据、可执行内容、用户点名项）；
+#           warn  = 只提示（行内代码这种"术语提法"，抹掉通常还能从别处找回）。
 
 PROTECTIONS = [
-    ("链接", r"https?://\S+|www\.\S+|\b\S+@\S+\.\S+\b|\[[^\]]+\]\([^)]+\)"),
-    ("代码", r"```|`[^`\n]+`"),
-    ("数字", r"[0-9]"),
-    ("单位", r"[0-9]\s*(%|％|倍|万|亿|ms|s\b|GB|MB|KB|TB|元|人|次|天|年|月|小时|分钟|页|字|行)"),
-    ("引用", r"《[^》]+》|「[^」]+」|『[^』]+』|“[^”]+”"),
-    ("警告", r"警告|注意：|注意:|风险|禁止|不得|必须|不要|勿|deprecated|WARNING|CAUTION"),
-    ("定义", r"是指|指的是|定义为|即\s|means|refers to|is defined as"),
-    ("出处", r"\[\d+\]|doi:|arXiv|来源：|来源:|参见|引用自"),
+    ("链接", r"https?://\S+|www\.\S+|\b\S+@\S+\.\S+\b|\[[^\]]+\]\([^)]+\)", "block"),
+    ("围栏", r"```", "block"),
+    ("行内代码", r"`[^`\n]+`", "warn"),
+    ("数字", r"[0-9]", "block"),
+    ("单位", r"[0-9]\s*(%|％|倍|万|亿|ms|s\b|GB|MB|KB|TB|元|人|次|天|年|月|小时|分钟|页|字|行)", "block"),
+    ("引用", r"《[^》]+》|「[^」]+」|『[^』]+』|“[^”]+”", "block"),
+    ("警告", r"警告|注意：|注意:|风险|禁止|不得|必须|不要|勿|deprecated|WARNING|CAUTION", "block"),
+    ("定义", r"是指|指的是|定义为|即\s|means|refers to|is defined as", "block"),
+    ("出处", r"\[\d+\]|doi:|arXiv|来源：|来源:|参见|引用自", "block"),
 ]
 
 FAT = [
@@ -175,13 +179,14 @@ def unit_kind(orig, start, end):
 
 
 def find_protections(text, keep_terms=()):
+    """返回 [(名称, 命中文本, 级别)]，级别为 block 或 warn。"""
     hits = []
-    for name, pattern in PROTECTIONS:
+    for name, pattern, severity in PROTECTIONS:
         for m in re.finditer(pattern, text):
-            hits.append((name, m.group(0)))
+            hits.append((name, m.group(0), severity))
     for term in keep_terms:
         if term and term in text:
-            hits.append(("指定保留", term))
+            hits.append(("指定保留", term, "block"))
     return hits
 
 
@@ -267,6 +272,22 @@ def containment(a, b):
     return len(a & b) / min(len(a), len(b))
 
 
+def first_divergence(orig, edited):
+    """判失败时，指出第一处新增落在现文的哪个位置，免得只拿到一个"不通过"。"""
+    sm = difflib.SequenceMatcher(None, orig, edited, autojunk=False)
+    for tag, i1, i2, j1, j2 in sm.get_opcodes():
+        if tag in ("insert", "replace"):
+            return {
+                "tag": tag,
+                "original_offset": i1,
+                "edited_offset": j1,
+                "original_text": clip(orig[i1:i2], 60),
+                "edited_text": clip(edited[j1:j2], 60),
+                "context_before": clip(edited[max(0, j1 - 24):j1], 24),
+            }
+    return None
+
+
 # ---------------------------------------------------------------- verify
 
 def cmd_verify(args):
@@ -282,6 +303,7 @@ def cmd_verify(args):
     keep_terms = [t.strip() for t in (args.keep or "").split(",") if t.strip()]
 
     blocked = []
+    warnings = []
     span_reports = []
     for start, end in spans:
         deleted = orig_cmp[start:end]
@@ -296,12 +318,22 @@ def cmd_verify(args):
             "context_before": clip(orig_cmp[max(0, start - 20): start], 20),
             "blocked": [],
         }
-        if hits:
-            names = sorted({h[0] for h in hits})
+        hard = [h for h in hits if h[2] == "block"]
+        soft = [h for h in hits if h[2] == "warn"]
+        if hard:
+            names = sorted({h[0] for h in hard})
             report["blocked"].extend(names)
             blocked.append({
                 "kind": "protection",
                 "names": names,
+                "start": start,
+                "end": end,
+                "text": clip(deleted, 80),
+            })
+        if soft:
+            warnings.append({
+                "kind": "mention",
+                "names": sorted({h[0] for h in soft}),
                 "start": start,
                 "end": end,
                 "text": clip(deleted, 80),
@@ -332,7 +364,9 @@ def cmd_verify(args):
         },
         "spans": span_reports,
         "blocked": blocked,
+        "warnings": warnings,
         "added_chars": added,
+        "first_divergence": None if ok else first_divergence(orig_cmp, edited_cmp),
     }
 
     if args.out:
@@ -355,6 +389,10 @@ def render_verify(r, args):
     print("原文 {} 字符 → 现文 {} 字符".format(r["original"]["chars"], r["edited"]["chars"]))
     if not r["subsequence"]:
         print("判定：不是严格子序列。现文含原文没有的文字（新增/改写/重排）。")
+        d = r.get("first_divergence")
+        if d:
+            print("第一处新增在现文第 {} 字符，前面是「{}」，多出来的是「{}」（原文该处为「{}」）。".format(
+                d["edited_offset"], d["context_before"], d["edited_text"], d["original_text"]))
         print("先撤回到原文，再只做删除。")
         return
     print("子序列：通过（现文每一字符都能在原文中按序找到）")
@@ -377,6 +415,11 @@ def render_verify(r, args):
                 print("   [{}-{}] 删除未落在完整单元边界：{}".format(
                     b["start"], b["end"], b["text"]))
         print("处理：把被删的章节补回原样，或缩小到完整句子/段落/整节；不得改写补全。")
+    if r.get("warnings"):
+        print("提示项 {} 个（不阻断，确认一下即可）：".format(len(r["warnings"])))
+        for w in r["warnings"][:limit]:
+            print("   [{}-{}] 删到了{}：{}".format(
+                w["start"], w["end"], "/".join(w["names"]), w["text"]))
 
 
 # ---------------------------------------------------------------- scan

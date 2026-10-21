@@ -149,6 +149,17 @@ class VerifyFail(unittest.TestCase):
         r = self.p.verify()
         self.assertEqual(r.returncode, 1, r.stdout)
 
+    def test_failure_points_at_first_added_char(self):
+        self.p.write(ORIG, ORIG.replace("第一段含结论，保持不变。", "第一段含结论、保持不变。"))
+        r = self.p.verify("--json")
+        self.assertEqual(r.returncode, 1, r.stdout)
+        d = json.loads(r.stdout)["first_divergence"]
+        self.assertIsNotNone(d)
+        self.assertIn("、", d["edited_text"])
+        for key in ("tag", "original_offset", "edited_offset", "original_text",
+                    "edited_text", "context_before"):
+            self.assertIn(key, d)
+
 
 class VerifyProtection(unittest.TestCase):
     def setUp(self):
@@ -177,7 +188,16 @@ class VerifyProtection(unittest.TestCase):
         self.assertEqual(r.returncode, 2, r.stdout)
         data = json.loads(r.stdout)
         names = {n for b in data["blocked"] for n in b.get("names", [])}
-        self.assertIn("代码", names)
+        self.assertIn("围栏", names)
+
+    def test_inline_code_only_warns(self):
+        orig = "正文提到 `tools/scissors.py` 这个文件，这句话可以整句删掉。\n"
+        self.p.write(orig, "")
+        r = self.p.verify("--json")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        data = json.loads(r.stdout)
+        self.assertEqual(data["blocked"], [])
+        self.assertEqual(data["warnings"][0]["names"], ["行内代码"])
 
     def test_partial_sentence_blocked(self):
         orig = "虽然如此，整体进度正常，风险可控。\n"

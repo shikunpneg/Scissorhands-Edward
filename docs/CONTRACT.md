@@ -40,8 +40,17 @@ python tools/scissors.py verify --original A --edited B
     {"kind": "protection", "names": ["数字", "单位"], "start": 300, "end": 340, "text": "…"},
     {"kind": "partial_unit", "start": 500, "end": 505, "text": "…"}
   ],
-  "added_chars": null
+  "added_chars": null,
+  "first_divergence": null
 }
+```
+
+判通过时 `first_divergence` 为 `null`；判失败时给第一处新增的位置，方便直接回退：
+
+```json
+{"tag": "replace", "original_offset": 40, "edited_offset": 40,
+ "original_text": "，", "edited_text": "、",
+ "context_before": "第一段含结论"}
 ```
 
 `unit` 取值：
@@ -53,7 +62,13 @@ python tools/scissors.py verify --original A --edited B
 | `sentence` | 落在句末标点之间 |
 | `partial` | 两端至少有一端不在单元边界上 |
 
-`blocked[].kind` 取值 `protection` 或 `partial_unit`。`protection` 的 `names` 为保护类别，取值固定为：链接、代码、数字、单位、引用、警告、定义、出处、指定保留。
+`blocked[].kind` 取值 `protection` 或 `partial_unit`。`protection` 的 `names` 为保护类别，取值固定为：链接、围栏、行内代码、数字、单位、引用、警告、定义、出处、指定保留。
+
+保护分两级：`block` 直接阻断（退出码 2），`warn` 只写进 `warnings` 不阻断。目前 `行内代码` 是 warn，其余是 block。理由是行内代码多为术语提法，抹掉通常还能从别处找回；围栏是可执行内容，丢了读者就照做不了。
+
+```json
+"warnings": [{"kind": "mention", "names": ["行内代码"], "start": 300, "end": 340, "text": "…"}]
+```
 
 `spans[].start` 与 `end` 是原文字符偏移，左闭右开。
 

@@ -84,6 +84,17 @@ msedge --headless=new --window-size=1024,1024 --screenshot=assets/edward.png ass
 
 `assets/edward.html` 只是把 svg 装进一个无边距页面，方便截图。渲染完目视核对一遍：发梢有没有被裁掉、刀刃有没有盖住脸、缩到 100px 还认不认得出来。
 
+## 在真实文档上验门禁
+
+```
+python tests/eval_gate.py                    # 默认拿 README.md 当靶子
+python tests/eval_gate.py --doc docs/DESIGN.md
+```
+
+七种改法由程序生成：删干净整节、原样返回、改一个标点、末尾补一句、对调两节、删带数字的句子、只删半句。每种带预期退出码，跑完逐条比对，输出"符合 N/7"。退出码 0 表示判据在这份文档上全部兑现。
+
+换靶子时注意：如果目标文档通篇都是表格或代码块，"删干净整节"那条可能找不到可删的干净节，会被跳过，条数就不再是 7。
+
 ## 在本地看 README 的效果
 
 ```

@@ -11,3 +11,6 @@ __pycache__/
 
 # 临时报告
 *.report.json
+
+# 本地预览产物
+.preview/

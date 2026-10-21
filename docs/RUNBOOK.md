@@ -84,6 +84,17 @@ msedge --headless=new --window-size=1024,1024 --screenshot=assets/edward.png ass
 
 `assets/edward.html` 只是把 svg 装进一个无边距页面，方便截图。渲染完目视核对一遍：发梢有没有被裁掉、刀刃有没有盖住脸、缩到 100px 还认不认得出来。
 
+## 在本地看 README 的效果
+
+```
+pandoc README.md -f gfm -t html5 -o .preview/_frag.html
+# 把 _frag.html 套进一个带 <base href="../"> 的空页，再截图
+```
+
+`<base href="../">` 不能省：预览页放在 `.preview/` 里，`assets/edward.png` 这类相对路径要靠它回到仓库根。少了这一行，头像会显示成裂图标，看起来像图挂了，其实是路径错了。
+
+预览页只用于自查，`.preview/` 不入库。
+
 ## 维护词典
 废话语料在 `tools/scissors.py` 的 `FAT` 表里，每条形如 `(类别, 名称, 正则, 强度)`。
 

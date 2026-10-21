@@ -1,6 +1,6 @@
 # Scissorhands-Edward
 
-<img src="assets/edward.png" alt="剪刀手爱德华" width="180" align="right">
+<img src="assets/edward.png" alt="剪刀手爱德华" width="172" align="right">
 
 一组把"删"变成可验证动作的 skill，用来抵抗模型的过度生成。
 
@@ -18,7 +18,7 @@ powershell -File install.ps1        # 七个 skill 进 ~/.dsh/skills，之后开
 2. 动手删：说"用 scissorhands-edit 删掉无关部分，只删不改"，或"用 scissorhands-doc 把这份汇报压到两页"。
 3. 删完自证：`python tools/scissors.py verify --original 原文.md --edited 现文.md`，退出码 0 才算过。
 
-七个里四个是场景插件，真正常用的两个：`scissorhands`（判据）与 `scissorhands-gate`（验证）。其余按场景调，不用记。
+七个里五个是场景插件，真正常用的两个：`scissorhands`（判据）与 `scissorhands-gate`（验证）。其余按场景调，不用记。
 
 ## 七把剪子
 
@@ -69,7 +69,7 @@ PowerShell 7 把 `powershell` 换成 `pwsh` 即可。脚本带 UTF-8 BOM，Windo
 python tests/test_scissors.py
 ```
 
-33 个用例，覆盖五类：
+34 个用例，覆盖五类：
 
 - 合法删除通过：整句、列表项、标题、整节
 - 非法改动拦下：改标点、重排、补写、重排缩进

@@ -62,7 +62,7 @@ python tools/scissors.py verify --original A --edited B
 ## scan
 
 ```
-python tools/scissors.py scan --file D [--min-overlap 0.45]
+python tools/scissors.py scan --file D [--min-overlap 0.45] [--include-lists]
     [--json] [--out report.json] [--report-limit 20]
 ```
 
@@ -71,6 +71,10 @@ python tools/scissors.py scan --file D [--min-overlap 0.45]
 | 0 | 没有可删候选 |
 | 3 | 至少一条可删候选 |
 | 5 | 文件读不到 |
+
+扫描范围：只判行文段落。标题、表格行、引用块、代码围栏内一律跳过；列表项默认跳过，加 `--include-lists` 才判。理由是文档里的列表项与示例列多数是在列举术语，不是在行文里注水。
+
+抹除规则：引号内、括号内、行内代码内的内容在匹配前被替换成等长占位符，所以"引用一句套话当例子"不算写了一句套话。占位与原文等长，报出的行号与文本仍是原文的。
 
 ```json
 {
@@ -86,7 +90,7 @@ python tools/scissors.py scan --file D [--min-overlap 0.45]
 }
 ```
 
-`action` 取值固定为：`删整句`、`删整段`、`整句保留（按单元完整性不得只删前缀）`、`改正文陈述后删引用块`、`只保留关键结论的加粗`。
+`action` 取值固定为：`删整句`、`删整段`、`删整段或降为主体陈述`、`整句保留（按单元完整性不得只删前缀）`、`改正文陈述后删引用块`、`只保留关键结论的加粗`。
 
 `blocked_by` 非空表示该条不可删，其内容与 `names` 同义。`estimated_deletable_chars` 只统计可删条目的预览文本长度，是量级估计，不是精确字数。
 

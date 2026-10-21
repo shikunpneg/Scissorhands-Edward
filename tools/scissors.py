@@ -204,6 +204,51 @@ def sentences(text, pstart, pend):
     return out
 
 
+def fence_ranges(text):
+    """代码围栏的字符区间，围栏内的内容一律不扫描。"""
+    ranges = []
+    open_at = None
+    pos = 0
+    for line in text.split("\n"):
+        if line.lstrip().startswith("```"):
+            if open_at is None:
+                open_at = pos
+            else:
+                ranges.append((open_at, pos + len(line)))
+                open_at = None
+        pos += len(line) + 1
+    if open_at is not None:
+        ranges.append((open_at, len(text)))
+    return ranges
+
+
+def unit_shape(ptext):
+    """段落形态。scan 只判行文，不判被列举的术语、表格与标题。"""
+    first = ptext.lstrip()
+    if first.startswith("#"):
+        return "heading"
+    if first.startswith("|"):
+        return "table"
+    if BLOCK_QUOTE.match(first):
+        return "quote"
+    if re.match(r"^([-*+]|\d+[.)])\s", first):
+        return "list"
+    return "prose"
+
+
+MASK = re.compile(r"`[^`\n]*`|「[^」\n]*」|“[^”\n]*”|『[^』\n]*』|《[^》\n]*》"
+                  r"|\"[^\"\n]*\"|（[^）\n]*）|\([^)\n]*\)")
+
+
+def mask_mentions(s):
+    """把引号、括号、行内代码里的内容抹成等长占位。
+
+    文档里引用一个套话当例子，和真的写了一句套话，不是一回事。
+    变长会让偏移错位，所以逐字符替换成等长的占位符。
+    """
+    return MASK.sub(lambda m: "·" * len(m.group(0)), s)
+
+
 def bigrams(s):
     s = re.sub(r"[\s。，、；：！？,.;:!?（）()「」“”\"'《》\[\]{}*`#>|-]", "", s)
     return {s[i: i + 2] for i in range(len(s) - 1)}
@@ -347,14 +392,24 @@ def cmd_scan(args):
             print("空文件。")
         return 0
 
+    fences = fence_ranges(text)
     seen_bigrams = []
     candidates = []
     total_chars = len(text)
 
-    for pi, (pstart, pend) in enumerate(paras):
+    for pstart, pend in paras:
+        if any(a <= pstart < b for a, b in fences):
+            continue
         ptext = text[pstart:pend]
-        is_summary = bool(SUMMARY_MARKERS.match(ptext.strip()))
-        p_bigrams = bigrams(ptext)
+        shape = unit_shape(ptext)
+        if shape in ("heading", "table", "quote"):
+            continue
+        if shape == "list" and not args.include_lists:
+            continue
+
+        masked = mask_mentions(ptext)
+        is_summary = bool(SUMMARY_MARKERS.match(masked.strip()))
+        p_bigrams = bigrams(masked)
         overlap = 0.0
         if is_summary and seen_bigrams:
             overlap = max(containment(p_bigrams, b) for b in seen_bigrams[-4:])
@@ -362,7 +417,7 @@ def cmd_scan(args):
         seen_bigrams.append(p_bigrams)
         seen_bigrams = seen_bigrams[-8:]
 
-        p_triple = len(set(TRIPLE.findall(ptext))) >= 3
+        p_triple = len(set(TRIPLE.findall(masked))) >= 3
         quote_lines = sum(1 for ln in ptext.split("\n") if BLOCK_QUOTE.match(ln))
         bold_count = ptext.count("**")
 
@@ -376,10 +431,8 @@ def cmd_scan(args):
                 "action": "删整段",
                 "blocked_by": [],
             })
-            seen_bigrams.append(p_bigrams)
-            seen_bigrams = seen_bigrams[-8:]
             continue
-        if p_triple and not HAS_FACT.search(ptext):
+        if p_triple and not HAS_FACT.search(masked):
             candidates.append({
                 "line": text.count("\n", 0, pstart) + 1,
                 "cat": "排比框架",
@@ -411,9 +464,10 @@ def cmd_scan(args):
             })
 
         for sstart, send in sentences(text, pstart, pend):
-            s = text[sstart:send]
-            if not s.strip():
+            raw = text[sstart:send]
+            if not raw.strip():
                 continue
+            s = mask_mentions(raw)
             hits = []
             strong = False
             for cat, name, pattern, strength in FAT:
@@ -424,15 +478,15 @@ def cmd_scan(args):
             if not hits:
                 continue
             has_fact = bool(HAS_FACT.search(s))
-            if not strong and has_fact and not repeat_hit:
+            if not strong and has_fact:
                 # 弱信号 + 含事实：整句不能删（数据要留），前缀又不是完整单元。
-                prot = find_protections(s)
+                prot = find_protections(raw)
                 if prot:
                     candidates.append({
                         "line": text.count("\n", 0, sstart) + 1,
                         "cat": hits[0][0],
                         "name": hits[0][1],
-                        "text": clip(s.strip(), 60),
+                        "text": clip(raw.strip(), 60),
                         "signals": ["套话命中", "含" + "/".join(sorted({p[0] for p in prot}))],
                         "action": "整句保留（按单元完整性不得只删前缀）",
                         "blocked_by": sorted({p[0] for p in prot}),
@@ -442,7 +496,7 @@ def cmd_scan(args):
                 "line": text.count("\n", 0, sstart) + 1,
                 "cat": hits[0][0],
                 "name": "、".join(sorted({h[1] for h in hits})),
-                "text": clip(s.strip(), 60),
+                "text": clip(raw.strip(), 60),
                 "signals": ["套话命中"] + ([] if has_fact else ["无数据"]),
                 "action": "删整句",
                 "blocked_by": [],
@@ -602,6 +656,8 @@ def main(argv=None):
     s = sub.add_parser("scan", help="标出套话候选，不改写")
     s.add_argument("--file", required=True)
     s.add_argument("--min-overlap", type=float, default=0.45)
+    s.add_argument("--include-lists", action="store_true",
+                   help="列表项也参与判定（默认只判行文，避免把被列举的术语当成套话）")
     s.add_argument("--json", action="store_true")
     s.add_argument("--out", default="")
     s.add_argument("--report-limit", type=int, default=20)

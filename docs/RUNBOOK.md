@@ -79,6 +79,8 @@ python tools/scissors.py code --base origin/main --test-cmd "pytest -q"
 
 新增前先想清楚强度：`strong` 表示单信号即可删，只给四类零信息的套话；其余一律 `weak`，要第二个信号才成为候选。
 
-加完必须跑测试，特别是 `test_clean_doc_has_no_deletable_candidate` 这条假阳性控制：新词把干净文档标出候选，说明收得太宽，测试会失败。
+加完必须跑测试，特别是这两条：`test_clean_doc_has_no_deletable_candidate` 是假阳性控制，新词把干净文档标出候选说明收得太宽；`test_repo_docs_have_no_deletable_candidate` 要求本仓自己的文档过得了自己的判据，新词把 README 或 skill 正文标出候选同样会失败。
+
+判"提及"而非"使用"靠 `mask_mentions`：引号、括号、行内代码里的内容在匹配前被抹成等长占位。新写的文档若把套话当例子引用，用引号包起来即可。
 
 保护清单在 `PROTECTIONS` 里，同样是正则表。往里加比往外拿安全：多加一条最多让工具少删，少加一条会让数据被删掉。

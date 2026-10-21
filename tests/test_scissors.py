@@ -238,7 +238,8 @@ class Scan(unittest.TestCase):
         allowed = {"line", "cat", "name", "text", "signals", "action", "blocked_by"}
         for c in data["candidates"]:
             self.assertEqual(set(c), allowed)
-            self.assertIn(c["action"], {"删整句", "删整段", "整句保留（按单元完整性不得只删前缀）",
+            self.assertIn(c["action"], {"删整句", "删整段", "删整段或降为主体陈述",
+                                        "整句保留（按单元完整性不得只删前缀）",
                                         "改正文陈述后删引用块", "只保留关键结论的加粗"})
 
     def test_out_file_written(self):
@@ -248,6 +249,69 @@ class Scan(unittest.TestCase):
         self.assertTrue(os.path.exists(out))
         with open(out, encoding="utf-8") as f:
             self.assertGreater(len(json.load(f)["candidates"]), 0)
+
+
+class ScanMentionVersusUse(unittest.TestCase):
+    """文档里引用一个套话当例子，不等于作者写了一句套话。"""
+
+    def scan_text(self, text, *extra):
+        d = tempfile.mkdtemp(prefix="scissors-scan-")
+        path = os.path.join(d, "doc.md")
+        with open(path, "w", encoding="utf-8", newline="") as f:
+            f.write(text)
+        r = run_tool("scan", "--file", path, "--json", *extra)
+        shutil.rmtree(d, ignore_errors=True)
+        return r, json.loads(r.stdout)
+
+    def test_quoted_slop_is_mention_not_use(self):
+        r, data = self.scan_text('正文里写"希望以上内容对你有帮助"这种句子，属于引用示例。\n')
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(data["summary"]["deletable_candidates"], 0)
+
+    def test_list_item_skipped_by_default(self):
+        r, data = self.scan_text("- 客套收尾：希望以上内容对你有帮助。\n")
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(data["summary"]["candidates"], 0)
+
+    def test_list_item_scanned_when_asked(self):
+        r, data = self.scan_text("- 客套收尾：希望以上内容对你有帮助。\n", "--include-lists")
+        self.assertEqual(r.returncode, 3, r.stdout)
+        self.assertEqual(data["summary"]["deletable_candidates"], 1)
+
+    def test_heading_and_table_and_fence_skipped(self):
+        text = ("# 希望以上内容对你有帮助\n"
+                "\n"
+                "| 说法 | 希望以上内容对你有帮助 |\n"
+                "\n"
+                "```\n"
+                "希望以上内容对你有帮助\n"
+                "```\n")
+        r, data = self.scan_text(text)
+        self.assertEqual(r.returncode, 0, r.stdout)
+        self.assertEqual(data["summary"]["candidates"], 0)
+
+
+class RepoOwnText(unittest.TestCase):
+    """本仓自己的文档必须通过自己的判据，否则说明标准写得比执行松。"""
+
+    def test_repo_docs_have_no_deletable_candidate(self):
+        paths = [os.path.join(ROOT, "README.md")]
+        for sub in ("docs", "skills"):
+            base = os.path.join(ROOT, sub)
+            for name in sorted(os.listdir(base)):
+                full = os.path.join(base, name)
+                if os.path.isdir(full):
+                    full = os.path.join(full, "SKILL.md")
+                if full.endswith(".md"):
+                    paths.append(full)
+        self.assertGreater(len(paths), 8)
+        for path in paths:
+            r = run_tool("scan", "--file", path, "--json")
+            data = json.loads(r.stdout)
+            self.assertEqual(data["summary"]["deletable_candidates"], 0,
+                             "{} 里有可删候选：{}".format(path, [
+                                 (c["line"], c["name"], c["text"])
+                                 for c in data["candidates"] if not c["blocked_by"]]))
 
 
 @unittest.skipUnless(shutil.which("git"), "需要 git")

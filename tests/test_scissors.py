@@ -412,6 +412,15 @@ class DocHygiene(unittest.TestCase):
         self.assertEqual(head, b"\xef\xbb\xbf",
                          "install.ps1 必须以 UTF-8 BOM 保存，否则 Windows PowerShell 5.1 解析中文会报错")
 
+    def test_avatar_source_and_rendered_file_both_exist(self):
+        svg = os.path.join(ROOT, "assets", "edward.svg")
+        png = os.path.join(ROOT, "assets", "edward.png")
+        self.assertTrue(os.path.exists(svg), "缺头像源文件")
+        self.assertTrue(os.path.exists(png), "缺头像渲染结果")
+        with open(os.path.join(ROOT, "README.md"), encoding="utf-8") as f:
+            readme = f.read()
+        self.assertIn("assets/edward.png", readme, "README 没有引用头像")
+
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

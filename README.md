@@ -1,10 +1,24 @@
 # Scissorhands-Edward
 
+<img src="assets/edward.png" alt="剪刀手爱德华" width="180" align="right">
+
 一组把"删"变成可验证动作的 skill，用来抵抗模型的过度生成。
 
 模型的问题不是不会写，是停不下来：铺垫、总结、评价、把一句话拆成三段、顺手把别人的稿子改好。只靠提示词约束，管一次；要每次都管住，得让"没加东西"这件事可以被机器判真假。
 
 这里的判定核心只有一句：**输出必须是原文的严格子序列**。现文的每个字符都能在原文中按顺序找到，才允许交付。这样一个判据同时排除了新增、改写、替换、重排、总结和润色。
+
+## 怎么用
+
+```
+powershell -File install.ps1        # 七个 skill 进 ~/.dsh/skills，之后开新会话
+```
+
+1. 判断该删什么：读 `skills/scissorhands/SKILL.md`，或直接说"用 scissorhands 看看这段哪里能删"。
+2. 动手删：说"用 scissorhands-edit 删掉无关部分，只删不改"，或"用 scissorhands-doc 把这份汇报压到两页"。
+3. 删完自证：`python tools/scissors.py verify --original 原文.md --edited 现文.md`，退出码 0 才算过。
+
+七个里四个是场景插件，真正常用的两个：`scissorhands`（判据）与 `scissorhands-gate`（验证）。其余按场景调，不用记。
 
 ## 七把剪子
 
@@ -17,8 +31,6 @@
 | `scissorhands-prompt` | 系统提示、skill 正文、few-shot、上下文 | 每条规则的消融用例仍通过 |
 | `scissorhands-reply` | 当前这次回答 | 落在篇幅档位内 |
 | `scissorhands-gate` | 以上任一动作的交付前检查 | 工具退出码为 0 |
-
-场景不同，不可互相替代：把汇报文档的"结论前置"套到会议逐字稿上就是毁数据；把代码的"只有删除行"套到 prompt 上就永远改不动措辞。
 
 ## 门禁工具
 
@@ -73,6 +85,7 @@ python tests/test_scissors.py
 skills/            七个 skill，每个一个目录，SKILL.md 带 frontmatter
 tools/scissors.py  门禁工具
 tests/             冒烟用例与两份对照样本
+assets/            头像：edward.svg 是源文件，edward.png 是渲染结果
 docs/DESIGN.md     为什么这样判，以及不做什么
 docs/CONTRACT.md   命令行与 JSON 契约、误报漏报边界
 docs/RUNBOOK.md    怎么跑、怎么排错、怎么接 CI

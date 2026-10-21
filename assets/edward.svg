@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <defs>
+    <linearGradient id="steel" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#6F777F"/>
+      <stop offset="0.24" stop-color="#F2F6FA"/>
+      <stop offset="0.48" stop-color="#98A1AA"/>
+      <stop offset="0.7" stop-color="#E3E9EF"/>
+      <stop offset="1" stop-color="#6C747C"/>
+    </linearGradient>
+    <clipPath id="badge"><circle cx="512" cy="512" r="496"/></clipPath>
+  </defs>
+
+  <g clip-path="url(#badge)">
+    <circle cx="512" cy="512" r="496" fill="#F2EDE3"/>
+    <circle cx="512" cy="512" r="496" fill="none" stroke="#171513" stroke-width="16"/>
+
+    <path d="M96 1024 C140 826 292 736 416 712 L608 712 C732 736 884 826 928 1024 Z"
+          fill="#151414" stroke="#171513" stroke-width="12"/>
+    <path d="M416 712 L402 542 L502 686 Z" fill="#0A0A0A" stroke="#2C2A28" stroke-width="9"/>
+    <path d="M608 712 L622 542 L522 686 Z" fill="#0A0A0A" stroke="#2C2A28" stroke-width="9"/>
+    <circle cx="470" cy="772" r="10" fill="#8B9199"/>
+    <circle cx="554" cy="772" r="10" fill="#8B9199"/>
+    <rect x="484" y="828" width="56" height="28" rx="9" fill="none" stroke="#8B9199" stroke-width="8"/>
+    <rect x="484" y="902" width="56" height="28" rx="9" fill="none" stroke="#8B9199" stroke-width="8"/>
+
+    <path d="M458 556 L566 556 L574 704 L450 704 Z" fill="#DED3C6" stroke="#171513" stroke-width="10"/>
+    <path d="M462 598 Q512 640 562 598" stroke="#CBBBAF" stroke-width="10" fill="none"/>
+
+    <path d="M512 194 C606 194 668 262 670 352 C671 420 646 466 636 516
+             C624 580 570 646 512 646 C454 646 400 580 388 516
+             C378 466 353 420 354 352 C356 262 418 194 512 194 Z"
+          fill="#EDE4D8" stroke="#171513" stroke-width="12"/>
+    <path d="M404 486 C396 522 402 558 422 582" stroke="#D3C4B6" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M620 486 C628 522 622 558 602 582" stroke="#D3C4B6" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M356 434 C336 426 324 448 334 470 C342 490 358 494 366 482" fill="#DED3C6" stroke="#171513" stroke-width="9"/>
+    <path d="M668 434 C688 426 700 448 690 470 C682 490 666 494 658 482" fill="#DED3C6" stroke="#171513" stroke-width="9"/>
+
+    <path d="M572 470 L612 496" stroke="#C6B3A8" stroke-width="6" stroke-linecap="round"/>
+    <path d="M566 490 L602 516" stroke="#C6B3A8" stroke-width="6" stroke-linecap="round"/>
+    <path d="M436 322 L472 342" stroke="#C6B3A8" stroke-width="6" stroke-linecap="round"/>
+
+    <ellipse cx="452" cy="446" rx="31" ry="18" fill="#FBF8F4" stroke="#171513" stroke-width="7"/>
+    <ellipse cx="572" cy="446" rx="31" ry="18" fill="#FBF8F4" stroke="#171513" stroke-width="7"/>
+    <circle cx="454" cy="448" r="11" fill="#2B2825"/>
+    <circle cx="570" cy="448" r="11" fill="#2B2825"/>
+    <circle cx="450" cy="443" r="3.5" fill="#FFFFFF"/>
+    <circle cx="566" cy="443" r="3.5" fill="#FFFFFF"/>
+    <path d="M424 430 Q452 418 480 430" stroke="#171513" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M544 430 Q572 418 600 430" stroke="#171513" stroke-width="9" fill="none" stroke-linecap="round"/>
+    <path d="M424 470 Q452 484 480 470" stroke="#BFAEA3" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M544 470 Q572 484 600 470" stroke="#BFAEA3" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+    <path d="M512 470 L502 522 Q512 532 524 522" stroke="#BCA99D" stroke-width="7" fill="none" stroke-linecap="round"/>
+    <path d="M474 566 Q512 574 550 566" stroke="#6E554E" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M480 580 Q512 590 544 580" stroke="#D6BEB5" stroke-width="7" fill="none" stroke-linecap="round"/>
+
+    <!-- 头发：不规则发团，左右两撮高，中间一峰，下缘参差 -->
+    <path d="M338 430
+             C326 352 344 282 384 240
+             C368 214 360 188 366 164
+             C392 186 410 208 420 232
+             C410 190 414 158 428 138
+             C452 168 468 196 476 224
+             C486 184 504 154 530 138
+             C540 176 544 204 542 232
+             C566 194 596 166 626 152
+             C622 190 612 218 604 242
+             C640 220 674 212 704 216
+             C686 252 668 278 656 302
+             C684 322 694 364 686 406
+             L672 430
+             L652 366 L636 432 L616 374 L596 436 L574 378 L552 434 L530 380
+             L508 438 L486 380 L464 434 L442 376 L420 430 L398 374 L378 426 L358 376 L340 432
+             Z"
+          fill="#100F0E" stroke="#100F0E" stroke-width="12" stroke-linejoin="round"/>
+    <path d="M366 436 C354 486 358 528 380 566" stroke="#100F0E" stroke-width="34" fill="none" stroke-linecap="round"/>
+    <path d="M658 436 C672 486 666 528 646 566" stroke="#100F0E" stroke-width="34" fill="none" stroke-linecap="round"/>
+    <path d="M392 246 Q444 202 508 200" stroke="#2C2A27" stroke-width="8" fill="none" stroke-linecap="round"/>
+    <path d="M556 206 Q612 224 648 268" stroke="#2C2A27" stroke-width="8" fill="none" stroke-linecap="round"/>
+
+    <!-- 左剪刀手：两片刀交叉，螺丝在交叉点 -->
+    <g>
+      <path d="M214 1024 L252 944 L396 944 L434 1024 Z" fill="#151414" stroke="#171513" stroke-width="12"/>
+      <path d="M252 944 Q324 914 396 944 L396 990 Q324 960 252 990 Z" fill="#0A0A0A" stroke="#2C2A28" stroke-width="8"/>
+      <path d="M240 1012 L270 1026 L460 716 L442 702 Z"
+            fill="url(#steel)" stroke="#4A5158" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M404 1018 L374 1030 L236 706 L254 696 Z"
+            fill="url(#steel)" stroke="#4A5158" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M254 1000 L436 716" stroke="#5C646C" stroke-width="4" fill="none" opacity="0.75"/>
+      <path d="M392 1006 L248 712" stroke="#5C646C" stroke-width="4" fill="none" opacity="0.75"/>
+      <circle cx="330" cy="876" r="26" fill="#6F767E" stroke="#171513" stroke-width="7"/>
+      <circle cx="330" cy="876" r="8" fill="#1B1A18"/>
+      <circle cx="330" cy="876" r="3" fill="#8B9199"/>
+    </g>
+
+    <!-- 右剪刀手 -->
+    <g>
+      <path d="M810 1024 L772 944 L628 944 L590 1024 Z" fill="#151414" stroke="#171513" stroke-width="12"/>
+      <path d="M772 944 Q700 914 628 944 L628 990 Q700 960 772 990 Z" fill="#0A0A0A" stroke="#2C2A28" stroke-width="8"/>
+      <path d="M784 1012 L754 1026 L564 716 L582 702 Z"
+            fill="url(#steel)" stroke="#4A5158" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M620 1018 L650 1030 L788 706 L770 696 Z"
+            fill="url(#steel)" stroke="#4A5158" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M770 1000 L588 716" stroke="#5C646C" stroke-width="4" fill="none" opacity="0.75"/>
+      <path d="M632 1006 L776 712" stroke="#5C646C" stroke-width="4" fill="none" opacity="0.75"/>
+      <circle cx="694" cy="876" r="26" fill="#6F767E" stroke="#171513" stroke-width="7"/>
+      <circle cx="694" cy="876" r="8" fill="#1B1A18"/>
+      <circle cx="694" cy="876" r="3" fill="#8B9199"/>
+    </g>
+  </g>
+</svg>

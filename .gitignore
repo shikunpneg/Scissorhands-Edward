@@ -1,6 +1,10 @@
 # 本仓自用的本地激活目录，不入库
 .dsh/
 
+# 视觉工具与无头浏览器的中间产物
+.dsh-vision-toolkit/
+.edge-prof/
+
 # Python
 __pycache__/
 *.pyc

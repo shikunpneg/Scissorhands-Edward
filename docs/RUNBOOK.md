@@ -73,8 +73,18 @@ python tools/scissors.py code --base origin/main --test-cmd "pytest -q"
 | `scan` 把正常过渡标成候选 | 词典法的假阳性 | 人工复核；`blocked_by` 非空的条目一律不删 |
 | 装完 skill 没出现 | 会话目录是启动时快照 | 开新会话 |
 
-## 维护词典
+## 重新生成头像
 
+`assets/edward.svg` 是源文件，改它就行；`assets/edward.png` 是渲染结果，README 引用的是 png。
+
+```
+# 用任意无头浏览器把 svg 渲染成 1024x1024 png
+msedge --headless=new --window-size=1024,1024 --screenshot=assets/edward.png assets/edward.html
+```
+
+`assets/edward.html` 只是把 svg 装进一个无边距页面，方便截图。渲染完目视核对一遍：发梢有没有被裁掉、刀刃有没有盖住脸、缩到 100px 还认不认得出来。
+
+## 维护词典
 废话语料在 `tools/scissors.py` 的 `FAT` 表里，每条形如 `(类别, 名称, 正则, 强度)`。
 
 新增前先想清楚强度：`strong` 表示单信号即可删，只给四类零信息的套话；其余一律 `weak`，要第二个信号才成为候选。

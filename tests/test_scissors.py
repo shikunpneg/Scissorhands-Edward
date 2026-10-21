@@ -324,7 +324,7 @@ class RepoOwnText(unittest.TestCase):
                     full = os.path.join(full, "SKILL.md")
                 if full.endswith(".md"):
                     paths.append(full)
-        self.assertGreater(len(paths), 8)
+        self.assertGreater(len(paths), 5)
         for path in paths:
             r = run_tool("scan", "--file", path, "--json")
             data = json.loads(r.stdout)
@@ -382,7 +382,7 @@ class SkillManifest(unittest.TestCase):
     def test_every_skill_has_valid_frontmatter(self):
         self.assertTrue(os.path.isdir(SKILLS), "缺少 skills/ 目录")
         dirs = sorted(d for d in os.listdir(SKILLS) if os.path.isdir(os.path.join(SKILLS, d)))
-        self.assertGreaterEqual(len(dirs), 5, "减法 skill 应成系列")
+        self.assertGreaterEqual(len(dirs), 3, "至少要有通用、代码、汇报三把剪子")
         for d in dirs:
             path = os.path.join(SKILLS, d, "SKILL.md")
             self.assertTrue(os.path.exists(path), "缺 " + path)
@@ -462,7 +462,7 @@ class PromptVerbatim(unittest.TestCase):
     ]
 
     def test_edit_skill_keeps_prompt_verbatim(self):
-        path = os.path.join(SKILLS, "scissorhands-edit", "SKILL.md")
+        path = os.path.join(SKILLS, "scissorhands", "SKILL.md")
         with open(path, encoding="utf-8") as f:
             text = f.read()
         for line in self.LINES:
@@ -470,7 +470,7 @@ class PromptVerbatim(unittest.TestCase):
 
     def test_no_compressed_restatement(self):
         """不许在原文之外再写一套压缩版约束，那会让两套判据打架。"""
-        path = os.path.join(SKILLS, "scissorhands-edit", "SKILL.md")
+        path = os.path.join(SKILLS, "scissorhands", "SKILL.md")
         with open(path, encoding="utf-8") as f:
             text = f.read()
         for marker in ("## 硬约束\n", "1. 只删原文内容。", "1. 只删原文内容"):

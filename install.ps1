@@ -55,8 +55,15 @@ if (-not $SkipTest) {
     Write-Host "测试通过"
 }
 
-# 3. 复制
+# 3. 复制，并清掉已经不在源目录里的旧 skill（删掉的 skill 不该留在磁盘上）
 New-Item -ItemType Directory -Force -Path $DestRoot | Out-Null
+$names = $skills.Name
+Get-ChildItem $DestRoot -Directory -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like "scissorhands*" -and $names -notcontains $_.Name } |
+    ForEach-Object {
+        Remove-Item $_.FullName -Recurse -Force
+        Write-Host "已移除过期的 skill：$($_.Name)"
+    }
 foreach ($s in $skills) {
     $target = Join-Path $DestRoot $s.Name
     if ((Test-Path $target) -and -not $Force) {

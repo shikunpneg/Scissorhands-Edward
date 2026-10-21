@@ -35,4 +35,4 @@ whenToUse: 写或改汇报稿、提案、立项说明、待审批方案。
 - 删掉风险段，因为"它影响批准"。这是最坏的删。
 - 段落短了，但每段仍在铺垫，只是铺垫得更简洁。
 
-改完跑 `scan` 看套话候选，再跑 `verify` 确认是从原稿删出来的。用法见 scissorhands-gate。
+改完跑 `scan` 看套话候选，再跑 `verify` 确认是从原稿删出来的（`python tools/scissors.py verify ...`，退出码 0 才算过）。

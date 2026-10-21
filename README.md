@@ -11,26 +11,20 @@
 ## 怎么用
 
 ```
-powershell -File install.ps1        # 七个 skill 进 ~/.dsh/skills，之后开新会话
+powershell -File install.ps1        # 三个 skill 进 ~/.dsh/skills，之后开新会话
 ```
 
-1. 判断该删什么：读 `skills/scissorhands/SKILL.md`，或直接说"用 scissorhands 看看这段哪里能删"。
-2. 动手删：说"用 scissorhands-edit 删掉无关部分，只删不改"，或"用 scissorhands-doc 把这份汇报压到两页"。
+1. 说一句话：`用 scissorhands 把这段里无关的删掉，只删不改`。
+2. 代码或汇报稿加一个词：`用 scissorhands-code 删掉没人用的`、`用 scissorhands-doc 压到两页`。
 3. 删完自证：`python tools/scissors.py verify --original 原文.md --edited 现文.md`，退出码 0 才算过。
 
-七个里五个是场景插件，真正常用的两个：`scissorhands`（判据）与 `scissorhands-gate`（验证）。其余按场景调，不用记。
+## 三个 skill
 
-## 七把剪子
-
-| skill | 剪的对象 | 硬门禁 |
+| skill | 剪什么 | 门禁 |
 | --- | --- | --- |
-| `scissorhands` | 总纲：废话语料、保护清单、双信号判定、分工 | 判定标准先对齐 |
-| `scissorhands-edit` | 已有文本、交付物 | 严格子序列 |
-| `scissorhands-doc` | 汇报文档、方案正文 | 结论前置，正文 2 至 3 页 |
-| `scissorhands-code` | 代码、依赖、方案里的层 | diff 只有删除行，测试通过 |
-| `scissorhands-prompt` | 系统提示、skill 正文、few-shot、上下文 | 每条规则的消融用例仍通过 |
-| `scissorhands-reply` | 当前这次回答 | 落在篇幅档位内 |
-| `scissorhands-gate` | 以上任一动作的交付前检查 | 工具退出码为 0 |
+| `scissorhands` | 文章句子、任何已有文本。正文就是提示词原文 | 严格子序列 |
+| `scissorhands-code` | 代码、依赖、多余的层 | diff 只有删除行，测试通过 |
+| `scissorhands-doc` | 汇报稿、方案正文 | 结论前置，正文 2 至 3 页 |
 
 ## 门禁工具
 
@@ -69,20 +63,22 @@ PowerShell 7 把 `powershell` 换成 `pwsh` 即可。脚本带 UTF-8 BOM，Windo
 python tests/test_scissors.py
 ```
 
-34 个用例，覆盖五类：
+38 个用例，覆盖五类：
 
 - 合法删除通过：整句、列表项、标题、整节
 - 非法改动拦下：改标点、重排、补写、重排缩进
 - 保护内容阻断：数字、链接、代码块、半句、用户点名保留项
 - 假阳性控制：干净技术文档必须零可删候选；引号里的例子算提及不算使用；列表项默认跳过
-- 自检：本仓自己的 README、文档与七个 skill 正文，必须通过自己的判据
+- 自检：本仓自己的 README、文档与三个 skill 正文，必须通过自己的判据
 
-另有代码门禁的两种结果（只有删除行、混入新增行），以及七个 skill 的 frontmatter 与目录名一致、`install.ps1` 保留 UTF-8 BOM。
+另有代码门禁的两种结果（只有删除行、混入新增行），以及三个 skill 的 frontmatter 与目录名一致、`install.ps1` 保留 UTF-8 BOM。
+
+`python tests/eval_gate.py` 是同一套判据在真实文档上的评估：七种改法各有预期退出码，跑完输出"符合 N/7"。
 
 ## 目录
 
 ```
-skills/            七个 skill，每个一个目录，SKILL.md 带 frontmatter
+skills/            三个 skill：通用、代码、汇报
 tools/scissors.py  门禁工具
 tests/             冒烟用例与两份对照样本
 assets/            头像：edward.svg 是源文件，edward.png 是渲染结果
